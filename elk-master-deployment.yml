@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elasticsearch-master
+  namespace: elk
+  labels:
+    app: elasticsearch-master
+    env: prod
+spec:
+  replicas: 1 # scale as desired (see NUMBER_OF_MASTERS below)
+  selector:
+    matchLabels:
+      app: elasticsearch-master
+  template:
+    metadata:
+      labels:
+        app: elasticsearch-master
+        env: prod
+    spec:
+      initContainers:
+      - name: init-sysctl
+        image: busybox:1.27.2
+        command:
+        - sysctl
+        - -w
+        - vm.max_map_count=262144
+        securityContext:
+          privileged: true
+      containers:
+      - name: elasticsearch-master
+        image: behroozam/elasticsearch:6.5.1
+        imagePullPolicy: Always
+        env:
+        - name: discovery.zen.ping.unicast.hosts
+          value: elasticsearch-data,elasticsearch-master
+        - name: node.name
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: cluster.name
+          value: fanapplus
+        - name: node.data
+          value: "false"
+        - name: node.master
+          value: "true"
+        - name: node.ingest
+          value: "false"
+        - name: bootstrap.memory_lock
+          value:  "false"
+        - name: ES_JAVA_OPTS
+          value: -Xms10G -Xmx10G
+        resources:
+          limits:
+            cpu: 12
+        ports:
+        - containerPort: 9300
+          name: transport
+      nodeSelector:
+        elk: "master"

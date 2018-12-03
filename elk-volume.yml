@@ -1,0 +1,28 @@
+# Create PersistentVolume
+# change the ip of NFS server
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: navad-elk-pv
+  labels:
+    app: navad-elk
+spec:
+  capacity:
+    storage: 100Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: /k8s/elk/
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: navad-elk-pvc
+  labels:
+    app: navad-elk
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi

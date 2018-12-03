@@ -1,0 +1,66 @@
+apiVersion: apps/v1beta2
+kind: DaemonSet
+metadata:
+  name: elasticsearch-ingest
+  namespace: elk
+  labels:
+    app: elasticsearch-ingest
+    env: prod
+spec:
+  selector:
+    matchLabels:
+      app: elasticsearch-ingest
+  template:
+    metadata:
+      labels:
+        app: elasticsearch-ingest
+    spec:
+      initContainers:
+      - name: init-sysctl
+        image: busybox:1.27.2
+        command:
+        - sysctl
+        - -w
+        - vm.max_map_count=262144
+        securityContext:
+          privileged: true
+      containers:
+      - name: elasticsearch-ingest
+        image: behroozam/elasticsearch:6.5.1
+        imagePullPolicy: Always
+        env:
+        - name: discovery.zen.ping.unicast.hosts
+          value: elasticsearch-data,elasticsearch-master
+        - name: node.name
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: cluster.name
+          value: fanapplus
+        - name: node.data
+          value: "false"
+        - name: node.master
+          value: "false"
+        - name: node.ingest
+          value: "true"
+        - name: bootstrap.memory_lock
+          value:  "false"
+        - name: ES_JAVA_OPTS
+          value: -Xms6g -Xmx6g
+        resources:
+          limits:
+            cpu: 6
+            memory: "10Gi"
+        ports:
+        - containerPort: 9300
+          name: transport
+        volumeMounts:
+        - name: tz-config
+          mountPath: /etc/localtime
+      volumes:
+      - name: tz-config
+        hostPath:
+          path: /usr/share/zoneinfo/Asia/Tehran
+      nodeSelector:
+        elk: "data"
+
