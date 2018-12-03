@@ -36,7 +36,7 @@ spec:
             fieldRef:
               fieldPath: metadata.name
         - name: cluster.name
-          value: fanapplus
+          value: yourcluster
         - name: node.data
           value: "true"
         - name: node.master
@@ -62,7 +62,7 @@ spec:
       volumes:
       - name: elasticsearch-data-storage
         persistentVolumeClaim:
-          claimName: navad-elk-pvc
+          claimName: elk-pvc
       - name: tz-config
         hostPath:
           path: /usr/share/zoneinfo/Asia/Tehran

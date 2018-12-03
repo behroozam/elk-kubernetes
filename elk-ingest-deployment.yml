@@ -36,7 +36,7 @@ spec:
             fieldRef:
               fieldPath: metadata.name
         - name: cluster.name
-          value: fanapplus
+          value: yourcluster
         - name: node.data
           value: "false"
         - name: node.master
